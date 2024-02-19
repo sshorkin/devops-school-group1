@@ -1,6 +1,7 @@
 #!/bin/sh
 
 export CURRENT_DATE=$(date +"%Y-%m-%d")
+export FINISH_STATUS="approved"
 
 SOURCE_FILE="tasks.json"
 OVERDUE_FLAG="no"
@@ -35,7 +36,7 @@ check_utils() {
 
 build_tasks() {
     PASSED_TASKS=$(jq '.tasks | map( . | select(.deadline < $ENV.CURRENT_DATE))' < $SOURCE_FILE)
-    OVERDUE_TASKS=$(jq '.tasks | map( . | select(.deadline >= $ENV.CURRENT_DATE))' < $SOURCE_FILE)
+    OVERDUE_TASKS=$(echo $PASSED_TASKS | jq 'map( . | select(.status != $ENV.FINISH_STATUS))')
     EMPTY_OVERDUE_TASKS=$(echo $OVERDUE_TASKS | jq 'isempty(.)')
 }
 
