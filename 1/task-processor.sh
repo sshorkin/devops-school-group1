@@ -7,7 +7,7 @@ OVERDUE_FLAG="no"
 
 EMPTY_OVERDUE_TASKS=false
 OVERDUE_TASKS=[]
-CURRENT_TASKS=[]
+PASSED_TASKS=[]
 
 usage() {
    echo "Syntax: task-processor [-h|-f file-name|-o yes/no]"
@@ -34,8 +34,8 @@ check_utils() {
 }
 
 build_tasks() {
-    CURRENT_TASKS=$(jq '.tasks | map( . | select(.deadline >= $ENV.CURRENT_DATE))' < $SOURCE_FILE)
-    OVERDUE_TASKS=$(jq '.tasks | map( . | select(.deadline < $ENV.CURRENT_DATE))' < $SOURCE_FILE)
+    PASSED_TASKS=$(jq '.tasks | map( . | select(.deadline < $ENV.CURRENT_DATE))' < $SOURCE_FILE)
+    OVERDUE_TASKS=$(jq '.tasks | map( . | select(.deadline >= $ENV.CURRENT_DATE))' < $SOURCE_FILE)
     EMPTY_OVERDUE_TASKS=$(echo $OVERDUE_TASKS | jq 'isempty(.)')
 }
 
@@ -43,8 +43,8 @@ show_overdue_tasks() {
     echo $OVERDUE_TASKS | jq -r '.[] | "Id: \(.id)", "Title: \(.title)", "Description: \(.description)", "Status: \(.status)", "Deadline: \(.deadline)", "---"'
 }
 
-show_current_tasks() {
-    echo $CURRENT_TASKS | jq -r '.[] | "Id: \(.id)", "Title: \(.title)", "Description: \(.description)", "Status: \(.status)", "Deadline: \(.deadline)", "---"'
+show_passed_tasks() {
+    echo $PASSED_TASKS | jq -r '.[] | "Id: \(.id)", "Title: \(.title)", "Description: \(.description)", "Status: \(.status)", "Deadline: \(.deadline)", "---"'
 }
 
 while getopts "hf:o:" option; do
@@ -66,7 +66,7 @@ check_file
 check_utils
 build_tasks
 
-show_current_tasks
+show_passed_tasks
 
 if [ "$OVERDUE_FLAG" = "yes" ]; then
     if [ "$EMPTY_OVERDUE_TASKS" = true ]; then 
